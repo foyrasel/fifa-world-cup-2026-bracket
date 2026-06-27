@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  flagEmoji String   @default("")
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Group {
+  id        String         @id @default(cuid())
+  name      String         @unique
+  teams     Team[]
+  matches   Match[]
+  standings GroupStanding[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Match {
+  id            String   @id @default(cuid())
+  matchNo       String   @unique
+  round         String
+  date          String
+  venue         String   @default("")
+  homeTeamName  String   @default("")
+  awayTeamName  String   @default("")
+  homeSeed      String   @default("")
+  awaySeed      String   @default("")
+  homeScore     Int?
+  awayScore     Int?
+  status        String   @default("upcoming")
+  homeWinner    Boolean  @default(false)
+  awayWinner    Boolean  @default(false)
+  predictedHome String   @default("")
+  predictedAway String   @default("")
+  predictedHomeScore Int?
+  predictedAwayScore Int?
+  winnerGoesToMatchNo String @default("")
+  winnerGoesToSide    String @default("home")
+  loserGoesToMatchNo  String @default("")
+  loserGoesToSide     String @default("home")
+  groupId       String?
+  group         Group?  @relation(fields: [groupId], references: [id])
+  isEditable    Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model GroupStanding {
+  id        String @id @default(cuid())
+  groupId   String
+  group     Group  @relation(fields: [groupId], references: [id])
+  teamName  String
+  played    Int     @default(0)
+  won       Int     @default(0)
+  drawn     Int     @default(0)
+  lost      Int     @default(0)
+  points    Int     @default(0)
+  position  Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

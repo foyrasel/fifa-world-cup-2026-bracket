@@ -1,2 +1,16 @@
-skills/
 node_modules/
+.next/
+db/*.db
+db/*.db-journal
+*.log
+.tool-results/
+upload/
+download/
+.zscripts/
+*.mjs
+.env
+skills/
+examples/
+worklog.md
+agent-ctx/
+tool-results/

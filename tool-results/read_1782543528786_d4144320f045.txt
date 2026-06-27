@@ -1,0 +1,667 @@
+     1→<!DOCTYPE html>
+     2→<html lang="en">
+     3→<head>
+     4→<meta charset="UTF-8">
+     5→<meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6→<title>FIFA World Cup 2026 — Full Tournament | Trackr AI</title>
+     7→<style>
+     8→  @page { size: A3 landscape; margin: 8mm; }
+     9→  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    10→  html, body {
+    11→    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    12→    background: #e9eef3; color: #0a1f3c; height: 100%; overflow: hidden;
+    13→  }
+    14→  
+    15→  .toolbar {
+    16→    position: fixed; top: 0; left: 0; right: 0; height: 64px;
+    17→    background: #0a1f3c; color: #fff; display: flex; justify-content: space-between; align-items: center;
+    18→    padding: 0 24px; z-index: 1000; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    19→  }
+    20→  .tb-left { display: flex; align-items: center; gap: 16px; }
+    21→  .tb-logo { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #1a3a6c, #0a1f3c); border: 2px solid #d4af37; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #d4af37; font-size: 16px; }
+    22→  .tb-info h1 { font-size: 16px; font-weight: 800; line-height: 1; }
+    23→  .tb-info p { font-size: 11px; color: #8ba1bd; letter-spacing: 2px; margin-top: 4px; text-transform: uppercase; }
+    24→  
+    25→  .tb-controls { display: flex; align-items: center; gap: 10px; }
+    26→  .tb-btn { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); height: 40px; min-width: 40px; padding: 0 12px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: all 0.2s; gap: 6px; }
+    27→  .tb-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-1px); }
+    28→  .tb-btn.download-btn { background: #1a3a6c; border-color: #1a3a6c; font-size: 13px; }
+    29→  .tb-btn.download-btn:hover { background: #2a4a7c; }
+    30→  .tb-btn.print-btn { background: #c8102e; border-color: #c8102e; font-size: 13px; }
+    31→  .tb-btn.print-btn:hover { background: #a00d24; }
+    32→  .tb-btn.predict-btn { background: linear-gradient(135deg, #4a90e2, #1a3a6c); border-color: #4a90e2; font-size: 13px; }
+    33→  .tb-zoom-val { font-size: 12px; color: #8ba1bd; width: 50px; text-align: center; font-weight: 700; }
+    34→  
+    35→  .tb-right { display: flex; align-items: center; gap: 16px; }
+    36→  .trackr-link { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; background: linear-gradient(135deg, #1a3a6c, #0a1f3c); border: 1px solid #d4af37; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; }
+    37→  .trackr-link span.dot { width: 8px; height: 8px; background: #d4af37; border-radius: 50%; box-shadow: 0 0 6px #d4af37; }
+    38→  .trackr-link strong { color: #d4af37; }
+    39→
+    40→  .scroll-area { position: absolute; top: 64px; left: 0; right: 0; bottom: 0; overflow: auto; background: #d9dee5; background-image: radial-gradient(#c5cdd6 1px, transparent 1px); background-size: 20px 20px; }
+    41→  .zoom-wrapper { transform-origin: top left; width: 1800px; padding: 40px; }
+    42→  .main-container { background: #fff; width: 100%; border-radius: 12px; box-shadow: 0 20px 60px rgba(10,31,60,0.15); padding: 30px; position: relative; }
+    43→
+    44→  /* GROUP STAGE */
+    45→  .group-stage { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 40px; }
+    46→  .group-card { border: 1px solid #e0e5eb; border-radius: 8px; overflow: hidden; }
+    47→  .group-head { background: #0a1f3c; color: #fff; padding: 6px 10px; font-size: 12px; font-weight: 800; letter-spacing: 1px; }
+    48→  .group-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    49→  .group-table th { background: #f7f9fb; padding: 4px; text-align: left; font-size: 8px; color: #6b7785; text-transform: uppercase; border-bottom: 1px solid #e0e5eb; }
+    50→  .group-table td { padding: 4px 6px; border-bottom: 1px solid #eef2f7; }
+    51→  .group-table tr:nth-child(1) td, .group-table tr:nth-child(2) td { background: #e6f5ec; font-weight: 700; }
+    52→
+    53→  /* BRACKET GRID */
+    54→  .bracket-container { display: grid; grid-template-columns: repeat(9, 1fr); gap: 20px; position: relative; }
+    55→  .col { display: flex; flex-direction: column; position: relative; }
+    56→  .col-header { text-align: center; margin-bottom: 16px; padding-bottom: 8px; position: relative; }
+    57→  .col-header .name { font-size: 13px; font-weight: 800; letter-spacing: 2px; color: #0a1f3c; text-transform: uppercase; }
+    58→  .col-header .date { font-size: 9px; color: #888; margin-top: 4px; font-weight: 600; }
+    59→  .col-header::after { content: ''; position: absolute; left: 30%; right: 30%; bottom: 0; height: 2px; background: linear-gradient(90deg, transparent, #c8102e, transparent); }
+    60→
+    61→  .matches { flex: 1; display: flex; flex-direction: column; justify-content: space-around; position: relative; }
+    62→  .pair { flex: 1; display: flex; flex-direction: column; justify-content: space-around; position: relative; }
+    63→
+    64→  .r32-l .pair::after, .r16-l .pair::after, .qf-l .pair::after { content: ''; position: absolute; right: -10px; top: 25%; bottom: 25%; width: 10px; border: solid #b8c2cc; border-width: 0 2px 2px 0; border-radius: 0 0 8px 0; }
+    65→  .r32-l .pair::before, .r16-l .pair::before, .qf-l .pair::before { content: ''; position: absolute; right: -20px; top: 50%; width: 10px; height: 2px; background: #b8c2cc; }
+    66→  .sf-l .match::after { content: ''; position: absolute; right: -20px; top: 50%; width: 20px; height: 2px; background: #b8c2cc; }
+    67→
+    68→  .r32-r .pair::after, .r16-r .pair::after, .qf-r .pair::after { content: ''; position: absolute; left: -10px; top: 25%; bottom: 25%; width: 10px; border: solid #b8c2cc; border-width: 0 0 2px 2px; border-radius: 0 0 0 8px; }
+    69→  .r32-r .pair::before, .r16-r .pair::before, .qf-r .pair::before { content: ''; position: absolute; left: -20px; top: 50%; width: 10px; height: 2px; background: #b8c2cc; }
+    70→  .sf-r .match::after { content: ''; position: absolute; left: -20px; top: 50%; width: 20px; height: 2px; background: #b8c2cc; }
+    71→  .sf-l .matches, .sf-r .matches { justify-content: center; }
+    72→
+    73→  .match { background: #fff; border: 1.5px solid #cdd5de; border-radius: 8px; padding: 5px 8px; position: relative; box-shadow: 0 2px 4px rgba(10,31,60,0.05); min-height: 48px; }
+    74→  .match:hover { border-color: #0a1f3c; }
+    75→  .match-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; padding-bottom: 3px; border-bottom: 1px dotted #d8dee5; }
+    76→  .match-no { background: #0a1f3c; color: #d4af37; font-size: 8px; font-weight: 800; padding: 2px 5px; border-radius: 3px; }
+    77→  .match-date { font-size: 8px; color: #888; font-weight: 600; }
+    78→  
+    79→  .slot { display: flex; align-items: center; gap: 5px; padding: 2px 0; border-bottom: 1px dotted #e3e8ee; min-height: 18px; }
+    80→  .slot:last-child { border-bottom: none; }
+    81→  .team-src { font-size: 7px; color: #b0b8c4; font-weight: 700; width: 25px; flex-shrink: 0; }
+    82→  .team-name { flex: 1; font-size: 11px; font-weight: 600; color: #1a2332; min-height: 14px; outline: none; border-bottom: 1px solid transparent; }
+    83→  .team-name:focus { background: #fffbe6; border-bottom: 1px solid #d4af37; }
+    84→  .team-name.winner { color: #0a7b3e; font-weight: 800; }
+    85→  .team-name.winner::before { content: '★ '; color: #d4af37; font-size: 9px; }
+    86→  .team-name.predicted { color: #1a73e8; font-weight: 800; }
+    87→  .team-name.predicted::before { content: '🤖 '; font-size: 9px; }
+    88→  
+    89→  .score { width: 20px; height: 18px; border: 1px solid #cdd5de; border-radius: 3px; background: #f7f9fb; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #0a1f3c; outline: none; }
+    90→  .score:focus { background: #fffbe6; border-color: #d4af37; }
+    91→  .score.winner-score { background: #e6f5ec; border-color: #0a7b3e; color: #0a7b3e; }
+    92→  .score.predicted-score { background: #e8f0fe; border-color: #1a73e8; color: #1a73e8; }
+    93→
+    94→  .center-col { display: flex; flex-direction: column; position: relative; }
+    95→  .center-col .matches { position: relative; flex: 1; }
+    96→  .trophy-icon { position: absolute; top: 10%; left: 0; right: 0; text-align: center; font-size: 40px; filter: drop-shadow(0 6px 12px rgba(212,175,55,0.4)); pointer-events: none; }
+    97→  
+    98→  .final-card { position: absolute; top: 50%; left: -10px; right: -10px; transform: translateY(-50%); background: linear-gradient(135deg, #0a1f3c 0%, #1a3a6c 50%, #0a1f3c 100%); border: 3px solid #d4af37; border-radius: 12px; padding: 12px 14px; box-shadow: 0 12px 40px rgba(10,31,60,0.4); }
+    99→  .final-card .match-head { border-bottom-color: rgba(212,175,55,0.4); }
+   100→  .final-card .match-no { background: #d4af37; color: #0a1f3c; }
+   101→  .final-card .match-date { color: #d4af37; }
+   102→  .final-card .slot { border-bottom-color: rgba(255,255,255,0.15); }
+   103→  .final-card .team-src { color: rgba(255,255,255,0.5); }
+   104→  .final-card .team-name { color: #fff; }
+   105→  .final-card .team-name.winner { color: #d4af37; }
+   106→  .final-card .team-name.predicted { color: #4a90e2; }
+   107→  .final-card .score { background: rgba(255,255,255,0.1); border-color: rgba(212,175,55,0.5); color: #d4af37; }
+   108→  .final-card .score.winner-score { background: rgba(212,175,55,0.3); border-color: #fff; color: #fff; }
+   109→  .final-card .score.predicted-score { background: rgba(74,144,226,0.3); border-color: #4a90e2; color: #fff; }
+   110→  .final-label { text-align: center; font-size: 13px; font-weight: 900; letter-spacing: 6px; color: #d4af37; margin-bottom: 6px; text-transform: uppercase; }
+   111→  .final-venue { text-align: center; font-size: 8px; color: rgba(255,255,255,0.8); margin-top: 6px; letter-spacing: 1px; font-weight: 600; }
+   112→  .final-venue strong { color: #d4af37; }
+   113→
+   114→  .champion-box { position: absolute; top: 50%; left: 5%; right: 5%; transform: translateY(100px); text-align: center; padding: 8px; border: 2px solid #d4af37; border-radius: 8px; background: rgba(212,175,55,0.1); }
+   115→  .champion-box .label { font-size: 9px; color: #6b7785; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 3px; font-weight: 700; }
+   116→  .champion-box .name { font-size: 16px; font-weight: 800; color: #0a1f3c; border-bottom: 2px solid #d4af37; padding-bottom: 3px; min-height: 22px; outline: none; }
+   117→  .champion-box .name.predicted { color: #1a73e8; border-bottom-color: #1a73e8; }
+   118→
+   119→  .third-card { position: absolute; top: 50%; left: 0; right: 0; transform: translateY(170px); background: #fff; border: 2px dashed #c8102e; border-radius: 8px; padding: 8px 10px; }
+   120→  .third-card .match-no { background: #c8102e; color: #fff; }
+   121→  .third-label { text-align: center; font-size: 10px; font-weight: 800; color: #c8102e; letter-spacing: 2px; margin-bottom: 4px; text-transform: uppercase; }
+   122→  .third-venue { text-align: center; font-size: 8px; color: #888; letter-spacing: 1px; margin-top: 4px; }
+   123→
+   124→  .bracket-footer { margin-top: 30px; padding-top: 12px; border-top: 2px solid #0a1f3c; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #6b7785; }
+   125→  .trackr-promo { display: flex; align-items: center; gap: 12px; }
+   126→  .trackr-promo .t-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #0a1f3c, #c8102e); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #d4af37; font-weight: 900; font-size: 16px; }
+   127→  .trackr-promo .t-text .t-top { font-size: 13px; font-weight: 800; color: #0a1f3c; }
+   128→  .trackr-promo .t-text .t-bot { font-size: 9px; color: #6b7785; }
+   129→  .trackr-promo .t-cta { background: linear-gradient(135deg, #c8102e 0%, #0a1f3c 100%); color: #fff; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 800; font-size: 11px; box-shadow: 0 4px 12px rgba(200,16,46,0.3); }
+   130→
+   131→  @media print {
+   132→    .toolbar { display: none !important; }
+   133→    .scroll-area { position: static; overflow: visible; background: #fff; }
+   134→    .zoom-wrapper { width: 100%; transform: none !important; padding: 0; }
+   135→    .main-container { box-shadow: none; border-radius: 0; }
+   136→    .team-name:focus, .score:focus, .champion-box .name:focus { background: transparent; }
+   137→  }
+   138→</style>
+   139→</head>
+   140→<body>
+   141→
+   142→<div class="toolbar">
+   143→  <div class="tb-left">
+   144→    <div class="tb-logo">26</div>
+   145→    <div class="tb-info">
+   146→      <h1>FIFA World Cup 2026</h1>
+   147→      <p>Full Tournament Bracket</p>
+   148→    </div>
+   149→  </div>
+   150→  <div class="tb-controls">
+   151→    <button class="tb-btn" onclick="zoom(-0.1)">−</button>
+   152→    <span class="tb-zoom-val" id="zoomVal">100%</span>
+   153→    <button class="tb-btn" onclick="zoom(0.1)">+</button>
+   154→    <button class="tb-btn" onclick="resetZoom()" title="Reset Zoom">⟲</button>
+   155→    <button class="tb-btn predict-btn" onclick="predictWithAI()"><span>✨</span> Predict with AI</button>
+   156→    <button class="tb-btn download-btn" onclick="downloadHTML()"><span>⬇</span> Download HTML</button>
+   157→    <button class="tb-btn print-btn" onclick="window.print()"><span>🖨️</span> Print</button>
+   158→  </div>
+   159→  <div class="tb-right">
+   160→    <a href="https://trackr-money.vercel.app/" class="trackr-link" target="_blank" rel="noopener">
+   161→      <span class="dot"></span>
+   162→      <span>TRACKR<strong>AI</strong></span>
+   163→    </a>
+   164→  </div>
+   165→</div>
+   166→
+   167→<div class="scroll-area">
+   168→  <div class="zoom-wrapper" id="zoomWrapper">
+   169→    <div class="main-container">
+   170→      
+   171→      <!-- GROUP STAGE -->
+   172→      <div class="group-stage">
+   173→        <!-- Group A -->
+   174→        <div class="group-card">
+   175→          <div class="group-head">GROUP A</div>
+   176→          <table class="group-table">
+   177→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   178→            <tr><td>France</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   179→            <tr><td>Germany</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   180→            <tr><td>Peru</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   181→            <tr><td>Jamaica</td><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+   182→          </table>
+   183→        </div>
+   184→        <!-- Group B -->
+   185→        <div class="group-card">
+   186→          <div class="group-head">GROUP B</div>
+   187→          <table class="group-table">
+   188→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   189→            <tr><td>Spain</td><td>3</td><td>3</td><td>0</td><td>0</td><td>9</td></tr>
+   190→            <tr><td>Sweden</td><td>3</td><td>1</td><td>1</td><td>1</td><td>4</td></tr>
+   191→            <tr><td>South Africa</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   192→            <tr><td>UAE</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   193→          </table>
+   194→        </div>
+   195→        <!-- Group C -->
+   196→        <div class="group-card">
+   197→          <div class="group-head">GROUP C</div>
+   198→          <table class="group-table">
+   199→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   200→            <tr><td>Poland</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   201→            <tr><td>England</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   202→            <tr><td>Chile</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   203→            <tr><td>Cameroon</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   204→          </table>
+   205→        </div>
+   206→        <!-- Group D -->
+   207→        <div class="group-card">
+   208→          <div class="group-head">GROUP D</div>
+   209→          <table class="group-table">
+   210→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   211→            <tr><td>Netherlands</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   212→            <tr><td>Mexico</td><td>3</td><td>1</td><td>2</td><td>0</td><td>5</td></tr>
+   213→            <tr><td>Tunisia</td><td>3</td><td>0</td><td>2</td><td>1</td><td>2</td></tr>
+   214→            <tr><td>New Zealand</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   215→          </table>
+   216→        </div>
+   217→        <!-- Group E -->
+   218→        <div class="group-card">
+   219→          <div class="group-head">GROUP E</div>
+   220→          <table class="group-table">
+   221→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   222→            <tr><td>Portugal</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   223→            <tr><td>Colombia</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   224→            <tr><td>Nigeria</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   225→            <tr><td>Saudi Arabia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   226→          </table>
+   227→        </div>
+   228→        <!-- Group F -->
+   229→        <div class="group-card">
+   230→          <div class="group-head">GROUP F</div>
+   231→          <table class="group-table">
+   232→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   233→            <tr><td>Argentina</td><td>3</td><td>3</td><td>0</td><td>0</td><td>9</td></tr>
+   234→            <tr><td>Morocco</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   235→            <tr><td>Paraguay</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   236→            <tr><td>South Korea</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   237→          </table>
+   238→        </div>
+   239→        <!-- Group G -->
+   240→        <div class="group-card">
+   241→          <div class="group-head">GROUP G</div>
+   242→          <table class="group-table">
+   243→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   244→            <tr><td>Belgium</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   245→            <tr><td>Iran</td><td>3</td><td>1</td><td>1</td><td>1</td><td>4</td></tr>
+   246→            <tr><td>Australia</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   247→            <tr><td>Honduras</td><td>3</td><td>0</td><td>2</td><td>1</td><td>2</td></tr>
+   248→          </table>
+   249→        </div>
+   250→        <!-- Group H -->
+   251→        <div class="group-card">
+   252→          <div class="group-head">GROUP H</div>
+   253→          <table class="group-table">
+   254→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   255→            <tr><td>Wales</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   256→            <tr><td>Ecuador</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   257→            <tr><td>Canada</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   258→            <tr><td>Iceland</td><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+   259→          </table>
+   260→        </div>
+   261→        <!-- Group I -->
+   262→        <div class="group-card">
+   263→          <div class="group-head">GROUP I</div>
+   264→          <table class="group-table">
+   265→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   266→            <tr><td>Uruguay</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   267→            <tr><td>Senegal</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   268→            <tr><td>Japan</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   269→            <tr><td>Qatar</td><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+   270→          </table>
+   271→        </div>
+   272→        <!-- Group J -->
+   273→        <div class="group-card">
+   274→          <div class="group-head">GROUP J</div>
+   275→          <table class="group-table">
+   276→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   277→            <tr><td>Italy</td><td>3</td><td>3</td><td>0</td><td>0</td><td>9</td></tr>
+   278→            <tr><td>Costa Rica</td><td>3</td><td>1</td><td>2</td><td>0</td><td>5</td></tr>
+   279→            <tr><td>USA</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   280→            <tr><td>Algeria</td><td>3</td><td>0</td><td>2</td><td>1</td><td>2</td></tr>
+   281→          </table>
+   282→        </div>
+   283→        <!-- Group K -->
+   284→        <div class="group-card">
+   285→          <div class="group-head">GROUP K</div>
+   286→          <table class="group-table">
+   287→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   288→            <tr><td>Switzerland</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   289→            <tr><td>Serbia</td><td>3</td><td>2</td><td>0</td><td>1</td><td>6</td></tr>
+   290→            <tr><td>Egypt</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   291→            <tr><td>Panama</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   292→          </table>
+   293→        </div>
+   294→        <!-- Group L -->
+   295→        <div class="group-card">
+   296→          <div class="group-head">GROUP L</div>
+   297→          <table class="group-table">
+   298→            <tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr>
+   299→            <tr><td>Denmark</td><td>3</td><td>2</td><td>1</td><td>0</td><td>7</td></tr>
+   300→            <tr><td>Croatia</td><td>3</td><td>1</td><td>2</td><td>0</td><td>5</td></tr>
+   301→            <tr><td>Ghana</td><td>3</td><td>1</td><td>0</td><td>2</td><td>3</td></tr>
+   302→            <tr><td>Bolivia</td><td>3</td><td>0</td><td>1</td><td>2</td><td>1</td></tr>
+   303→          </table>
+   304→        </div>
+   305→      </div>
+   306→
+   307→      <!-- KNOCKOUT BRACKET -->
+   308→      <div class="bracket-container">
+   309→      
+   310→        <!-- LEFT: ROUND OF 32 -->
+   311→        <div class="col r32-l">
+   312→          <div class="col-header"><div class="name">Round of 32</div><div class="date">JUN 28 – JUL 3</div></div>
+   313→          <div class="matches">
+   314→            <div class="pair">
+   315→              <div class="match">
+   316→                <div class="match-head"><span class="match-no">M73</span><span class="match-date">Jun 28</span></div>
+   317→                <div class="slot"><span class="team-src">1A</span><span class="team-name winner">France</span><span class="score winner-score">3</span></div>
+   318→                <div class="slot"><span class="team-src">3B/F</span><span class="team-name">Paraguay</span><span class="score">0</span></div>
+   319→              </div>
+   320→              <div class="match">
+   321→                <div class="match-head"><span class="match-no">M74</span><span class="match-date">Jun 28</span></div>
+   322→                <div class="slot"><span class="team-src">1C</span><span class="team-name">Poland</span><span class="score">1</span></div>
+   323→                <div class="slot"><span class="team-src">3D/E</span><span class="team-name winner">Brazil</span><span class="score winner-score">2</span></div>
+   324→              </div>
+   325→            </div>
+   326→            <div class="pair">
+   327→              <div class="match">
+   328→                <div class="match-head"><span class="match-no">M75</span><span class="match-date">Jun 29</span></div>
+   329→                <div class="slot"><span class="team-src">1B</span><span class="team-name winner">Spain</span><span class="score winner-score">2</span></div>
+   330→                <div class="slot"><span class="team-src">3A/C</span><span class="team-name">Japan</span><span class="score">1</span></div>
+   331→              </div>
+   332→              <div class="match">
+   333→                <div class="match-head"><span class="match-no">M76</span><span class="match-date">Jun 29</span></div>
+   334→                <div class="slot"><span class="team-src">1E</span><span class="team-name winner">Portugal</span><span class="score winner-score">4</span></div>
+   335→                <div class="slot"><span class="team-src">3F/G</span><span class="team-name">Australia</span><span class="score">0</span></div>
+   336→              </div>
+   337→            </div>
+   338→            <div class="pair">
+   339→              <div class="match">
+   340→                <div class="match-head"><span class="match-no">M77</span><span class="match-date">Jun 29</span></div>
+   341→                <div class="slot"><span class="team-src">1D</span><span class="team-name winner">Netherlands</span><span class="score winner-score">2</span></div>
+   342→                <div class="slot"><span class="team-src">3C/E</span><span class="team-name">Senegal</span><span class="score">0</span></div>
+   343→              </div>
+   344→              <div class="match">
+   345→                <div class="match-head"><span class="match-no">M78</span><span class="match-date">Jun 30</span></div>
+   346→                <div class="slot"><span class="team-src">1F</span><span class="team-name winner">Argentina</span><span class="score winner-score">3</span></div>
+   347→                <div class="slot"><span class="team-src">3A/B</span><span class="team-name">Morocco</span><span class="score">1</span></div>
+   348→              </div>
+   349→            </div>
+   350→            <div class="pair">
+   351→              <div class="match">
+   352→                <div class="match-head"><span class="match-no">M79</span><span class="match-date">Jun 30</span></div>
+   353→                <div class="slot"><span class="team-src">2A</span><span class="team-name winner">Germany</span><span class="score winner-score">2</span></div>
+   354→                <div class="slot"><span class="team-src">2B</span><span class="team-name">Sweden</span><span class="score">2</span></div>
+   355→              </div>
+   356→              <div class="match">
+   357→                <div class="match-head"><span class="match-no">M80</span><span class="match-date">Jun 30</span></div>
+   358→                <div class="slot"><span class="team-src">2C</span><span class="team-name winner">England</span><span class="score winner-score">1</span></div>
+   359→                <div class="slot"><span class="team-src">2D</span><span class="team-name">Mexico</span><span class="score">0</span></div>
+   360→              </div>
+   361→            </div>
+   362→          </div>
+   363→        </div>
+   364→
+   365→        <!-- LEFT: ROUND OF 16 -->
+   366→        <div class="col r16-l">
+   367→          <div class="col-header"><div class="name">Round of 16</div><div class="date">JUL 4 – 7</div></div>
+   368→          <div class="matches">
+   369→            <div class="pair">
+   370→              <div class="match">
+   371→                <div class="match-head"><span class="match-no">M89</span><span class="match-date">Jul 4</span></div>
+   372→                <div class="slot"><span class="team-src">W73</span><span class="team-name winner">France</span><span class="score winner-score">2</span></div>
+   373→                <div class="slot"><span class="team-src">W74</span><span class="team-name">Brazil</span><span class="score">1</span></div>
+   374→              </div>
+   375→              <div class="match">
+   376→                <div class="match-head"><span class="match-no">M90</span><span class="match-date">Jul 5</span></div>
+   377→                <div class="slot"><span class="team-src">W75</span><span class="team-name">Spain</span><span class="score">0</span></div>
+   378→                <div class="slot"><span class="team-src">W76</span><span class="team-name winner">Portugal</span><span class="score winner-score">1</span></div>
+   379→              </div>
+   380→            </div>
+   381→            <div class="pair">
+   382→              <div class="match">
+   383→                <div class="match-head"><span class="match-no">M91</span><span class="match-date">Jul 5</span></div>
+   384→                <div class="slot"><span class="team-src">W77</span><span class="team-name">Netherlands</span><span class="score">1</span></div>
+   385→                <div class="slot"><span class="team-src">W78</span><span class="team-name winner">Argentina</span><span class="score winner-score">2</span></div>
+   386→              </div>
+   387→              <div class="match">
+   388→                <div class="match-head"><span class="match-no">M92</span><span class="match-date">Jul 6</span></div>
+   389→                <div class="slot"><span class="team-src">W79</span><span class="team-name">Germany</span><span class="score">1</span></div>
+   390→                <div class="slot"><span class="team-src">W80</span><span class="team-name winner">England</span><span class="score winner-score">3</span></div>
+   391→              </div>
+   392→            </div>
+   393→          </div>
+   394→        </div>
+   395→
+   396→        <!-- LEFT: QUARTER-FINAL -->
+   397→        <div class="col qf-l">
+   398→          <div class="col-header"><div class="name">Quarter-Final</div><div class="date">JUL 9 – 10</div></div>
+   399→          <div class="matches">
+   400→            <div class="pair">
+   401→              <div class="match">
+   402→                <div class="match-head"><span class="match-no">M97</span><span class="match-date">Jul 9</span></div>
+   403→                <div class="slot"><span class="team-src">W89</span><span class="team-name winner">France</span><span class="score winner-score">3</span></div>
+   404→                <div class="slot"><span class="team-src">W90</span><span class="team-name">Portugal</span><span class="score">1</span></div>
+   405→              </div>
+   406→              <div class="match">
+   407→                <div class="match-head"><span class="match-no">M98</span><span class="match-date">Jul 10</span></div>
+   408→                <div class="slot"><span class="team-src">W91</span><span class="team-name">Argentina</span><span class="score">2</span></div>
+   409→                <div class="slot"><span class="team-src">W92</span><span class="team-name winner">England</span><span class="score winner-score">4</span></div>
+   410→              </div>
+   411→            </div>
+   412→          </div>
+   413→        </div>
+   414→
+   415→        <!-- LEFT: SEMI-FINAL -->
+   416→        <div class="col sf-l">
+   417→          <div class="col-header"><div class="name">Semi-Final</div><div class="date">JUL 14</div></div>
+   418→          <div class="matches">
+   419→            <div class="match">
+   420→              <div class="match-head"><span class="match-no">M101</span><span class="match-date">Jul 14</span></div>
+   421→              <div class="slot"><span class="team-src">W97</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   422→              <div class="slot"><span class="team-src">W98</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   423→            </div>
+   424→          </div>
+   425→        </div>
+   426→
+   427→        <!-- CENTER: FINAL + 3RD PLACE -->
+   428→        <div class="col center-col">
+   429→          <div class="col-header"><div class="name">Final</div><div class="date">JUL 19</div></div>
+   430→          <div class="matches">
+   431→            <div class="trophy-icon">🏆</div>
+   432→            <div class="final-card">
+   433→              <div class="final-label">Final</div>
+   434→              <div class="match-head"><span class="match-no">M104</span><span class="match-date">Jul 19</span></div>
+   435→              <div class="slot"><span class="team-src">W101</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   436→              <div class="slot"><span class="team-src">W102</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   437→              <div class="final-venue"><strong>METLIFE STADIUM</strong> · NEW YORK / NEW JERSEY</div>
+   438→            </div>
+   439→            <div class="champion-box">
+   440→              <div class="label">★ Champion 2026 ★</div>
+   441→              <div class="name" id="championName" contenteditable="true"></div>
+   442→            </div>
+   443→            <div class="third-card">
+   444→              <div class="third-label">Third Place</div>
+   445→              <div class="match-head"><span class="match-no">M103</span><span class="match-date">Jul 18</span></div>
+   446→              <div class="slot"><span class="team-src">L101</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   447→              <div class="slot"><span class="team-src">L102</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   448→              <div class="third-venue">HARD ROCK STADIUM · MIAMI</div>
+   449→            </div>
+   450→          </div>
+   451→        </div>
+   452→
+   453→        <!-- RIGHT: SEMI-FINAL -->
+   454→        <div class="col sf-r">
+   455→          <div class="col-header"><div class="name">Semi-Final</div><div class="date">JUL 15</div></div>
+   456→          <div class="matches">
+   457→            <div class="match">
+   458→              <div class="match-head"><span class="match-no">M102</span><span class="match-date">Jul 15</span></div>
+   459→              <div class="slot"><span class="team-src">W99</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   460→              <div class="slot"><span class="team-src">W100</span><span class="team-name" contenteditable="true"></span><span class="score" contenteditable="true"></span></div>
+   461→            </div>
+   462→          </div>
+   463→        </div>
+   464→
+   465→        <!-- RIGHT: QUARTER-FINAL -->
+   466→        <div class="col qf-r">
+   467→          <div class="col-header"><div class="name">Quarter-Final</div><div class="date">JUL 10 – 11</div></div>
+   468→          <div class="matches">
+   469→            <div class="pair">
+   470→              <div class="match">
+   471→                <div class="match-head"><span class="match-no">M99</span><span class="match-date">Jul 10</span></div>
+   472→                <div class="slot"><span class="team-src">W93</span><span class="team-name">Belgium</span><span class="score">1</span></div>
+   473→                <div class="slot"><span class="team-src">W94</span><span class="team-name winner">Italy</span><span class="score winner-score">2</span></div>
+   474→              </div>
+   475→              <div class="match">
+   476→                <div class="match-head"><span class="match-no">M100</span><span class="match-date">Jul 11</span></div>
+   477→                <div class="slot"><span class="team-src">W95</span><span class="team-name">Denmark</span><span class="score">0</span></div>
+   478→                <div class="slot"><span class="team-src">W96</span><span class="team-name winner">USA</span><span class="score winner-score">1</span></div>
+   479→              </div>
+   480→            </div>
+   481→          </div>
+   482→        </div>
+   483→
+   484→        <!-- RIGHT: ROUND OF 16 -->
+   485→        <div class="col r16-r">
+   486→          <div class="col-header"><div class="name">Round of 16</div><div class="date">JUL 4 – 7</div></div>
+   487→          <div class="matches">
+   488→            <div class="pair">
+   489→              <div class="match">
+   490→                <div class="match-head"><span class="match-no">M93</span><span class="match-date">Jul 6</span></div>
+   491→                <div class="slot"><span class="team-src">W81</span><span class="team-name winner">Belgium</span><span class="score winner-score">2</span></div>
+   492→                <div class="slot"><span class="team-src">W82</span><span class="team-name">Croatia</span><span class="score">0</span></div>
+   493→              </div>
+   494→              <div class="match">
+   495→                <div class="match-head"><span class="match-no">M94</span><span class="match-date">Jul 7</span></div>
+   496→                <div class="slot"><span class="team-src">W83</span><span class="team-name winner">Italy</span><span class="score winner-score">1</span></div>
+   497→                <div class="slot"><span class="team-src">W84</span><span class="team-name">Switzerland</span><span class="score">0</span></div>
+   498→              </div>
+   499→            </div>
+   500→            <div class="pair">
+   501→              <div class="match">
+   502→                <div class="match-head"><span class="match-no">M95</span><span class="match-date">Jul 7</span></div>
+   503→                <div class="slot"><span class="team-src">W85</span><span class="team-name winner">Denmark</span><span class="score winner-score">3</span></div>
+   504→                <div class="slot"><span class="team-src">W86</span><span class="team-name">Uruguay</span><span class="score">2</span></div>
+   505→              </div>
+   506→              <div class="match">
+   507→                <div class="match-head"><span class="match-no">M96</span><span class="match-date">Jul 7</span></div>
+   508→                <div class="slot"><span class="team-src">W87</span><span class="team-name">Ecuador</span><span class="score">1</span></div>
+   509→                <div class="slot"><span class="team-src">W88</span><span class="team-name winner">USA</span><span class="score winner-score">2</span></div>
+   510→              </div>
+   511→            </div>
+   512→          </div>
+   513→        </div>
+   514→
+   515→        <!-- RIGHT: ROUND OF 32 -->
+   516→        <div class="col r32-r">
+   517→          <div class="col-header"><div class="name">Round of 32</div><div class="date">JUN 28 – JUL 3</div></div>
+   518→          <div class="matches">
+   519→            <div class="pair">
+   520→              <div class="match">
+   521→                <div class="match-head"><span class="match-no">M81</span><span class="match-date">Jul 1</span></div>
+   522→                <div class="slot"><span class="team-src">1G</span><span class="team-name winner">Belgium</span><span class="score winner-score">2</span></div>
+   523→                <div class="slot"><span class="team-src">3H/K</span><span class="team-name">Canada</span><span class="score">1</span></div>
+   524→              </div>
+   525→              <div class="match">
+   526→                <div class="match-head"><span class="match-no">M82</span><span class="match-date">Jul 1</span></div>
+   527→                <div class="slot"><span class="team-src">1H</span><span class="team-name">Wales</span><span class="score">0</span></div>
+   528→                <div class="slot"><span class="team-src">3G/J</span><span class="team-name winner">Croatia</span><span class="score winner-score">1</span></div>
+   529→              </div>
+   530→            </div>
+   531→            <div class="pair">
+   532→              <div class="match">
+   533→                <div class="match-head"><span class="match-no">M83</span><span class="match-date">Jul 2</span></div>
+   534→                <div class="slot"><span class="team-src">1J</span><span class="team-name winner">Italy</span><span class="score winner-score">3</span></div>
+   535→                <div class="slot"><span class="team-src">3I/L</span><span class="team-name">Qatar</span><span class="score">0</span></div>
+   536→              </div>
+   537→              <div class="match">
+   538→                <div class="match-head"><span class="match-no">M84</span><span class="match-date">Jul 2</span></div>
+   539→                <div class="slot"><span class="team-src">1K</span><span class="team-name">Serbia</span><span class="score">1</span></div>
+   540→                <div class="slot"><span class="team-src">3J/K</span><span class="team-name winner">Switzerland</span><span class="score winner-score">2</span></div>
+   541→              </div>
+   542→            </div>
+   543→            <div class="pair">
+   544→              <div class="match">
+   545→                <div class="match-head"><span class="match-no">M85</span><span class="match-date">Jul 2</span></div>
+   546→                <div class="slot"><span class="team-src">1L</span><span class="team-name winner">Denmark</span><span class="score winner-score">1</span></div>
+   547→                <div class="slot"><span class="team-src">3L/H</span><span class="team-name">Egypt</span><span class="score">0</span></div>
+   548→              </div>
+   549→              <div class="match">
+   550→                <div class="match-head"><span class="match-no">M86</span><span class="match-date">Jul 3</span></div>
+   551→                <div class="slot"><span class="team-src">1I</span><span class="team-name winner">Uruguay</span><span class="score winner-score">2</span></div>
+   552→                <div class="slot"><span class="team-src">2G</span><span class="team-name">Iran</span><span class="score">0</span></div>
+   553→              </div>
+   554→            </div>
+   555→            <div class="pair">
+   556→              <div class="match">
+   557→                <div class="match-head"><span class="match-no">M87</span><span class="match-date">Jul 3</span></div>
+   558→                <div class="slot"><span class="team-src">2H</span><span class="team-name winner">Ecuador</span><span class="score winner-score">2</span></div>
+   559→                <div class="slot"><span class="team-src">2L</span><span class="team-name">Ghana</span><span class="score">1</span></div>
+   560→              </div>
+   561→              <div class="match">
+   562→                <div class="match-head"><span class="match-no">M88</span><span class="match-date">Jul 3</span></div>
+   563→                <div class="slot"><span class="team-src">2J</span><span class="team-name">Costa Rica</span><span class="score">0</span></div>
+   564→                <div class="slot"><span class="team-src">2K</span><span class="team-name winner">USA</span><span class="score winner-score">3</span></div>
+   565→              </div>
+   566→            </div>
+   567→          </div>
+   568→        </div>
+   569→      </div>
+   570→
+   571→      <div class="bracket-footer">
+   572→        <div class="trackr-promo">
+   573→          <div class="t-icon">T</div>
+   574→          <div class="t-text">
+   575→            <div class="t-top">Trackr - AI Expense Tracker</div>
+   576→            <div class="t-bot">Smart finances for smart fans. trackr-money.vercel.app</div>
+   577→          </div>
+   578→        </div>
+   579→        <a href="https://trackr-money.vercel.app/" class="t-cta" target="_blank">Manage Your Finances Live</a>
+   580→      </div>
+   581→
+   582→    </div>
+   583→  </div>
+   584→</div>
+   585→
+   586→<script>
+   587→  let zoomLevel = 1;
+   588→  const zoomWrapper = document.getElementById('zoomWrapper');
+   589→  const zoomVal = document.getElementById('zoomVal');
+   590→
+   591→  function zoom(delta) {
+   592→    zoomLevel = Math.min(Math.max(zoomLevel + delta, 0.4), 2.0);
+   593→    updateZoom();
+   594→  }
+   595→  function resetZoom() { zoomLevel = 1; updateZoom(); }
+   596→  function updateZoom() {
+   597→    zoomWrapper.style.transform = `scale(${zoomLevel})`;
+   598→    zoomVal.innerText = Math.round(zoomLevel * 100) + '%';
+   599→  }
+   600→
+   601→  function downloadHTML() {
+   602→    const htmlContent = document.documentElement.outerHTML;
+   603→    const blob = new Blob([htmlContent], { type: 'text/html' });
+   604→    const url = URL.createObjectURL(blob);
+   605→    const a = document.createElement('a');
+   606→    a.href = url;
+   607→    a.download = 'FIFA_2026_Bracket.html';
+   608→    document.body.appendChild(a);
+   609→    a.click();
+   610→    document.body.removeChild(a);
+   611→    URL.revokeObjectURL(url);
+   612→  }
+   613→
+   614→  function predictWithAI() {
+   615→    if (confirm("Use Trackr AI to predict the remaining upcoming matches?")) {
+   616→      // 1. Predict Semi-Finals (M101, M102) based on QF winners
+   617→      setPrediction('M101', 'France', 'England', 2, 1);
+   618→      setPrediction('M102', 'Italy', 'USA', 3, 1);
+   619→      
+   620→      // 2. Predict Final (M104)
+   621→      setPrediction('M104', 'France', 'Italy', 2, 1);
+   622→      
+   623→      // 3. Predict 3rd Place (M103)
+   624→      setPrediction('M103', 'England', 'USA', 2, 0);
+   625→      
+   626→      // 4. Set Champion
+   627→      const championBox = document.getElementById('championName');
+   628→      championBox.innerText = 'France';
+   629→      championBox.classList.add('predicted');
+   630→      
+   631→      alert("AI Predictions applied! Upcoming matches have been filled.");
+   632→    }
+   633→  }
+   634→
+   635→  function setPrediction(matchNo, team1, team2, score1, score2) {
+   636→    const matches = document.querySelectorAll('.match');
+   637→    matches.forEach(match => {
+   638→      const matchNoElement = match.querySelector('.match-no');
+   639→      if (matchNoElement && matchNoElement.innerText === matchNo) {
+   640→        const slots = match.querySelectorAll('.slot');
+   641→        const name1 = slots[0].querySelector('.team-name');
+   642→        const scoreEl1 = slots[0].querySelector('.score');
+   643→        name1.innerText = team1;
+   644→        name1.classList.add('predicted');
+   645→        scoreEl1.innerText = score1;
+   646→        scoreEl1.classList.add('predicted-score');
+   647→        
+   648→        const name2 = slots[1].querySelector('.team-name');
+   649→        const scoreEl2 = slots[1].querySelector('.score');
+   650→        name2.innerText = team2;
+   651→        name2.classList.add('predicted');
+   652→        scoreEl2.innerText = score2;
+   653→        scoreEl2.classList.add('predicted-score');
+   654→        
+   655→        if (score1 > score2) {
+   656→            name1.classList.remove('predicted'); name1.classList.add('winner');
+   657→            scoreEl1.classList.remove('predicted-score'); scoreEl1.classList.add('winner-score');
+   658→        } else {
+   659→            name2.classList.remove('predicted'); name2.classList.add('winner');
+   660→            scoreEl2.classList.remove('predicted-score'); scoreEl2.classList.add('winner-score');
+   661→        }
+   662→      }
+   663→    });
+   664→  }
+   665→</script>
+   666→</body>
+   667→</html>

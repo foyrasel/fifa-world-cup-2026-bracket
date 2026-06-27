@@ -30,48 +30,81 @@ const STANDINGS = {
   L:[['Denmark',3,2,1,0,7],['Croatia',3,1,2,0,5],['Ghana',3,1,0,2,3],['Bolivia',3,0,1,2,1]],
 }
 const FEED = {
+  // R32 → R16
+  M73:{w:'M89',ws:'home'},M74:{w:'M89',ws:'away'},
+  M75:{w:'M90',ws:'home'},M76:{w:'M90',ws:'away'},
+  M77:{w:'M91',ws:'home'},M78:{w:'M91',ws:'away'},
+  M79:{w:'M92',ws:'home'},M80:{w:'M92',ws:'away'},
+  M81:{w:'M93',ws:'home'},M82:{w:'M93',ws:'away'},
+  M83:{w:'M94',ws:'home'},M84:{w:'M94',ws:'away'},
+  M85:{w:'M95',ws:'home'},M86:{w:'M95',ws:'away'},
+  M87:{w:'M96',ws:'home'},M88:{w:'M96',ws:'away'},
+  // R16 → QF
   M89:{w:'M97',ws:'home'},M90:{w:'M97',ws:'away'},M91:{w:'M98',ws:'home'},M92:{w:'M98',ws:'away'},
   M93:{w:'M99',ws:'home'},M94:{w:'M99',ws:'away'},M95:{w:'M100',ws:'home'},M96:{w:'M100',ws:'away'},
+  // QF → SF
   M97:{w:'M101',ws:'home'},M98:{w:'M101',ws:'away'},M99:{w:'M102',ws:'home'},M100:{w:'M102',ws:'away'},
+  // SF → Final + 3rd Place
   M101:{w:'M104',ws:'home',l:'M103',ls:'home'},M102:{w:'M104',ws:'away',l:'M103',ls:'away'},
 }
-// [matchNo, home, homeSeed, away, awaySeed, homeScore, awayScore, homeWinner, date, round, venue]
+
+// Qualified teams from group stage (known as of June 27 — last day of group stage)
+// 1st and 2nd from each group + 8 best 3rd-placed teams
+// 3rd-placed qualifiers (by points): South Africa(3), Chile(3), Nigeria(3), Australia(3), Canada(3), Egypt(3), Ghana(3), Algeria(2)
+// Non-qualifying 3rd-placed: Peru(1), Tunisia(2), Paraguay(1), Japan(1)
+
+// [matchNo, homeTeam, homeSeed, awayTeam, awaySeed, date, round, venue]
+// ALL scores are null — no knockout matches have been played yet (R32 starts Jun 28)
 const K = [
-  ['M73','France','1A','Paraguay','3B/F',3,0,true,'Jun 28','R32',''],
-  ['M74','Poland','1C','Brazil','3D/E',1,2,false,'Jun 28','R32',''],
-  ['M75','Spain','1B','Japan','3A/C',2,1,true,'Jun 29','R32',''],
-  ['M76','Portugal','1E','Australia','3F/G',4,0,true,'Jun 29','R32',''],
-  ['M77','Netherlands','1D','Senegal','3C/E',2,0,true,'Jun 29','R32',''],
-  ['M78','Argentina','1F','Morocco','3A/B',3,1,true,'Jun 30','R32',''],
-  ['M79','Germany','2A','Sweden','2B',2,2,false,'Jun 30','R32',''],
-  ['M80','England','2C','Mexico','2D',1,0,true,'Jun 30','R32',''],
-  ['M81','Belgium','1G','Canada','3H/K',2,1,true,'Jul 1','R32',''],
-  ['M82','Wales','1H','Croatia','3G/J',0,1,false,'Jul 1','R32',''],
-  ['M83','Italy','1J','Qatar','3I/L',3,0,true,'Jul 2','R32',''],
-  ['M84','Serbia','1K','Switzerland','3J/K',1,2,false,'Jul 2','R32',''],
-  ['M85','Denmark','1L','Egypt','3L/H',1,0,true,'Jul 2','R32',''],
-  ['M86','Uruguay','1I','Iran','2G',2,0,true,'Jul 3','R32',''],
-  ['M87','Ecuador','2H','Ghana','2L',2,1,true,'Jul 3','R32',''],
-  ['M88','Costa Rica','2J','USA','2K',0,3,false,'Jul 3','R32',''],
-  ['M89','France','W73','Brazil','W74',2,1,true,'Jul 4','R16',''],
-  ['M90','Spain','W75','Portugal','W76',0,1,false,'Jul 5','R16',''],
-  ['M91','Netherlands','W77','Argentina','W78',1,2,false,'Jul 5','R16',''],
-  ['M92','Germany','W79','England','W80',1,3,false,'Jul 6','R16',''],
-  ['M93','Belgium','W81','Croatia','W82',2,0,true,'Jul 6','R16',''],
-  ['M94','Italy','W83','Switzerland','W84',1,0,true,'Jul 7','R16',''],
-  ['M95','Denmark','W85','Uruguay','W86',3,2,true,'Jul 7','R16',''],
-  ['M96','Ecuador','W87','USA','W88',1,2,false,'Jul 7','R16',''],
-  ['M97','France','W89','Portugal','W90',3,1,true,'Jul 9','QF',''],
-  ['M98','Argentina','W91','England','W92',2,4,false,'Jul 10','QF',''],
-  ['M99','Belgium','W93','Italy','W94',1,2,false,'Jul 10','QF',''],
-  ['M100','Denmark','W95','USA','W96',0,1,false,'Jul 11','QF',''],
-  ['M101','','W97','','W98',null,null,false,'Jul 14','SF',''],
-  ['M102','','W99','','W100',null,null,false,'Jul 15','SF',''],
-  ['M103','','L101','','L102',null,null,false,'Jul 18','3P','HARD ROCK STADIUM · MIAMI'],
-  ['M104','','W101','','W102',null,null,false,'Jul 19','F','METLIFE STADIUM · NEW YORK / NEW JERSEY'],
+  // === LEFT SIDE ===
+  ['M73','France','1A','South Africa','3B','Jun 28','R32',''],
+  ['M74','Poland','1C','Nigeria','3E','Jun 28','R32',''],
+  ['M75','Spain','1B','Chile','3A/C','Jun 29','R32',''],
+  ['M76','Portugal','1E','Australia','3G','Jun 29','R32',''],
+  ['M77','Netherlands','1D','Ghana','3L','Jun 29','R32',''],
+  ['M78','Argentina','1F','Canada','3H','Jun 30','R32',''],
+  ['M79','Germany','2A','Sweden','2B','Jun 30','R32',''],
+  ['M80','England','2C','Mexico','2D','Jun 30','R32',''],
+  // === RIGHT SIDE ===
+  ['M81','Belgium','1G','Egypt','3K','Jul 1','R32',''],
+  ['M82','Wales','1H','Algeria','3J','Jul 1','R32',''],
+  ['M83','Italy','1J','Qatar','3I/L','Jul 2','R32',''],
+  ['M84','Serbia','1K','Croatia','3D','Jul 2','R32',''],
+  ['M85','Denmark','1L','Iran','2G','Jul 2','R32',''],
+  ['M86','Uruguay','1I','Colombia','2E','Jul 3','R32',''],
+  ['M87','Ecuador','2H','Costa Rica','2J','Jul 3','R32',''],
+  ['M88','USA','2K','Switzerland','2L','Jul 3','R32',''],
+  // === ROUND OF 16 — TBD until R32 results ===
+  ['M89','','W73','','W74','Jul 4','R16',''],
+  ['M90','','W75','','W76','Jul 5','R16',''],
+  ['M91','','W77','','W78','Jul 5','R16',''],
+  ['M92','','W79','','W80','Jul 6','R16',''],
+  ['M93','','W81','','W82','Jul 6','R16',''],
+  ['M94','','W83','','W84','Jul 7','R16',''],
+  ['M95','','W85','','W86','Jul 7','R16',''],
+  ['M96','','W87','','W88','Jul 7','R16',''],
+  // === QUARTER-FINALS — TBD until R16 results ===
+  ['M97','','W89','','W90','Jul 9','QF',''],
+  ['M98','','W91','','W92','Jul 10','QF',''],
+  ['M99','','W93','','W94','Jul 10','QF',''],
+  ['M100','','W95','','W96','Jul 11','QF',''],
+  // === SEMI-FINALS — TBD until QF results ===
+  ['M101','','W97','','W98','Jul 14','SF',''],
+  ['M102','','W99','','W100','Jul 15','SF',''],
+  // === THIRD PLACE — TBD until SF results ===
+  ['M103','','L101','','L102','Jul 18','3P','HARD ROCK STADIUM · MIAMI'],
+  // === FINAL — TBD until SF results ===
+  ['M104','','W101','','W102','Jul 19','F','METLIFE STADIUM · NEW YORK / NEW JERSEY'],
 ]
+
 async function seed() {
   console.log('Seeding...')
+  // Clear existing data
+  await db.match.deleteMany()
+  await db.groupStanding.deleteMany()
+  await db.team.deleteMany()
+  await db.group.deleteMany()
+
   for (const [gn, teams] of Object.entries(GROUPS)) {
     const g = await db.group.create({data:{name:gn}})
     for (const t of teams) await db.team.create({data:{name:t.name,code:t.code,flagEmoji:t.emoji,groupId:g.id}})
@@ -83,13 +116,13 @@ async function seed() {
   for (const m of K) {
     const f=FEED[m[0]]||{}
     await db.match.create({data:{
-      matchNo:m[0], round:m[9], date:m[8], venue:m[10],
+      matchNo:m[0], round:m[6], date:m[5], venue:m[7]||'',
       homeTeamName:m[1], awayTeamName:m[3], homeSeed:m[2], awaySeed:m[4],
-      homeScore:m[5], awayScore:m[6],
-      status:m[5]!==null?'completed':'upcoming',
-      homeWinner:m[5]!==null&&m[6]!==null?m[5]>m[6]:false,
-      awayWinner:m[5]!==null&&m[6]!==null?m[6]>m[5]:false,
-      isEditable:m[5]===null,
+      homeScore:null, awayScore:null,
+      status:'upcoming',
+      homeWinner:false,
+      awayWinner:false,
+      isEditable:true,
       winnerGoesToMatchNo:f.w||'', winnerGoesToSide:f.ws||'home',
       loserGoesToMatchNo:f.l||'', loserGoesToSide:f.ls||'home',
     }})

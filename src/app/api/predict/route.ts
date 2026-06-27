@@ -1,4 +1,5 @@
-import { db } from '@/lib/db'
+import { db, ensureSchema } from '@/lib/db'
+import { seedIfEmpty } from '@/lib/seed'
 import { NextResponse } from 'next/server'
 
 const TEAM_STRENGTH: Record<string, number> = {
@@ -26,7 +27,9 @@ function predictScore(team1: string, team2: string): { s1: number; s2: number; w
   return { s1, s2, winner: s1 > s2 ? team1 : team2 }
 }
 
-async function predictAndPropagate(match: MatchData) {
+type M = { matchNo: string; homeTeamName: string; awayTeamName: string; homeSeed: string; awaySeed: string; winnerGoesToMatchNo: string; winnerGoesToSide: string; loserGoesToMatchNo: string; loserGoesToSide: string; isEditable: boolean; predictedHomeScore: number | null }
+
+async function predictAndPropagate(match: M) {
   const home = match.homeTeamName || 'TBD'
   const away = match.awayTeamName || 'TBD'
   const { s1, s2, winner } = predictScore(home, away)
@@ -34,23 +37,15 @@ async function predictAndPropagate(match: MatchData) {
 
   await db.match.update({
     where: { matchNo: match.matchNo },
-    data: {
-      predictedHome: home,
-      predictedAway: away,
-      predictedHomeScore: s1,
-      predictedAwayScore: s2,
-    },
+    data: { predictedHome: home, predictedAway: away, predictedHomeScore: s1, predictedAwayScore: s2 },
   })
 
-  // Propagate winner
   if (match.winnerGoesToMatchNo) {
     const data: Record<string, string> = {}
     if (match.winnerGoesToSide === 'home') data.homeTeamName = winner
     else data.awayTeamName = winner
     await db.match.update({ where: { matchNo: match.winnerGoesToMatchNo }, data })
   }
-
-  // Propagate loser
   if (match.loserGoesToMatchNo) {
     const data: Record<string, string> = {}
     if (match.loserGoesToSide === 'home') data.homeTeamName = loser
@@ -61,47 +56,20 @@ async function predictAndPropagate(match: MatchData) {
   return { matchNo: match.matchNo, homeTeam: home, awayTeam: away, homeScore: s1, awayScore: s2, winner }
 }
 
-type MatchData = {
-  matchNo: string
-  homeTeamName: string
-  awayTeamName: string
-  homeSeed: string
-  awaySeed: string
-  winnerGoesToMatchNo: string
-  winnerGoesToSide: string
-  loserGoesToMatchNo: string
-  loserGoesToSide: string
-  isEditable: boolean
-  predictedHomeScore: number | null
-}
-
 export async function POST() {
   try {
+    await ensureSchema()
+    await seedIfEmpty()
     const predictions: Array<{ matchNo: string; homeTeam: string; awayTeam: string; homeScore: number; awayScore: number; winner: string }> = []
-
-    // Multi-pass: predict matches that have team names, propagate, repeat until no more
     let pass = 0
-    const MAX_PASSES = 5
-    while (pass < MAX_PASSES) {
-      const remaining = await db.match.findMany({
-        where: { isEditable: true, predictedHomeScore: null },
-        orderBy: { matchNo: 'asc' },
-      })
-
+    while (pass < 5) {
+      const remaining = await db.match.findMany({ where: { isEditable: true, predictedHomeScore: null }, orderBy: { matchNo: 'asc' } })
       if (remaining.length === 0) break
-
-      // Only predict matches that have actual team names (not TBD)
       const ready = remaining.filter(m => m.homeTeamName && m.awayTeamName && m.homeTeamName !== 'TBD' && m.awayTeamName !== 'TBD')
       if (ready.length === 0) break
-
-      for (const match of ready) {
-        const result = await predictAndPropagate(match)
-        predictions.push(result)
-      }
-
+      for (const match of ready) { const result = await predictAndPropagate(match as M); predictions.push(result) }
       pass++
     }
-
     return NextResponse.json({ success: true, count: predictions.length, predictions })
   } catch (error) {
     console.error('Prediction error:', error)
@@ -111,36 +79,20 @@ export async function POST() {
 
 export async function DELETE() {
   try {
-    // Clear all predictions
-    await db.match.updateMany({
-      data: {
-        predictedHome: '',
-        predictedAway: '',
-        predictedHomeScore: null,
-        predictedAwayScore: null,
-      },
-    })
-
-    // Clear team names for editable matches fed by other editable matches
+    await ensureSchema()
+    await seedIfEmpty()
+    await db.match.updateMany({ data: { predictedHome: '', predictedAway: '', predictedHomeScore: null, predictedAwayScore: null } })
     const editable = await db.match.findMany({ where: { isEditable: true } })
     for (const m of editable) {
       if (m.homeSeed.startsWith('W') || m.homeSeed.startsWith('L')) {
-        await db.match.update({
-          where: { matchNo: m.matchNo },
-          data: { homeTeamName: '', awayTeamName: '' },
-        })
+        await db.match.update({ where: { matchNo: m.matchNo }, data: { homeTeamName: '', awayTeamName: '' } })
       }
     }
-
-    // Re-propagate from completed matches only
-    const completed = await db.match.findMany({
-      where: { status: 'completed', winnerGoesToMatchNo: { not: '' } },
-    })
+    const completed = await db.match.findMany({ where: { status: 'completed', winnerGoesToMatchNo: { not: '' } } })
     for (const m of completed) {
       const winner = m.homeWinner ? m.homeTeamName : m.awayWinner ? m.awayTeamName : ''
       const loser = m.awayWinner ? m.homeTeamName : m.homeWinner ? m.awayTeamName : ''
       if (!winner) continue
-
       if (m.winnerGoesToMatchNo) {
         const data: Record<string, string> = {}
         if (m.winnerGoesToSide === 'home') data.homeTeamName = winner
@@ -154,7 +106,6 @@ export async function DELETE() {
         await db.match.update({ where: { matchNo: m.loserGoesToMatchNo }, data })
       }
     }
-
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Clear predictions error:', error)

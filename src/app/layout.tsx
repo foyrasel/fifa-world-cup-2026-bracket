@@ -14,11 +14,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FIFA World Cup 2026 — Full Tournament Bracket",
-  description: "Interactive FIFA World Cup 2026 tournament bracket with AI predictions. Track all 48 teams across 12 groups and the full knockout stage.",
-  keywords: ["FIFA", "World Cup 2026", "tournament bracket", "football", "soccer", "predictions"],
+  title: "FIFA World Cup 2026 — Interactive Bracket with AI Predictions | Trackr",
+  description: "Make your FIFA World Cup 2026 predictions! Interactive tournament bracket for all 48 teams across 12 groups with AI-powered score predictions. Download as PNG and share with friends.",
+  keywords: ["FIFA", "World Cup 2026", "tournament bracket", "football predictions", "soccer", "AI predictions", "bracket challenge"],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+  },
+  openGraph: {
+    title: "FIFA World Cup 2026 — Predict the Champion! 🏆",
+    description: "Interactive bracket with AI predictions for all 48 teams. Make your picks, download as PNG, and challenge your friends!",
+    type: "website",
+    siteName: "Trackr - AI Expense Tracker",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FIFA World Cup 2026 — Predict the Champion! 🏆",
+    description: "Interactive bracket with AI predictions for all 48 teams. Make your picks and share!",
   },
 };
 
